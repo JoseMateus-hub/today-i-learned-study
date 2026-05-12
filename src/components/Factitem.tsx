@@ -7,3 +7,8 @@ interface FactItemProps {
 export default function Factitem({ fact }: FactItemProps) {
     return (
         <li className="fact">
+            <p>{fact.text}</p>
+            <a href={fact.source} target="_blank" rel="noopener noreferrer">Fonte</a>
+        </li>
+    );
+}
