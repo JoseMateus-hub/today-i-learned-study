@@ -4,7 +4,7 @@ interface FactItemProps {
     fact: Fact;
 }
 
-export default function Factitem({ fact }: FactItemProps) {
+export default function FactItem({ fact }: FactItemProps) {
     return (
         <li className="fact">
             <p>{fact.text}</p>
