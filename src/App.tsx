@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { Fact } from './types';
 import Header from './components/Header';
 import FactList from './components/FactList';
 import CategoryFilter from './components/CategoryFilter';
+import NewFactForm from './components/NewFactForm';
 
 const INITIAL_FACTS: Fact[] = [{
   id: 1,
@@ -50,12 +51,31 @@ export default function App() {
     setCurrentCategory(category);
   }
 
+  const [time, setTime] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(prevTime => prevTime + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [time]);
+
+  const formInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (showForm) {
+      formInputRef.current?.focus();
+    }
+  }, [showForm]);
+
   return (
     <>
-      <Header 
-      showForm={showForm} 
-      onToggleForm={handleToggleForm} 
+      {time}
+      <Header
+        showForm={showForm}
+        onToggleForm={handleToggleForm}
       />
+      {showForm && <NewFactForm inputRef={formInputRef} />}
       <main>
         <CategoryFilter
           currentCategory={currentCategory}
