@@ -16,6 +16,8 @@ export default function NewFactForm({ inputRef }: NewFactFormProps) {
 
    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
+       
+
         console.log({ text, source, category })
    }
 
