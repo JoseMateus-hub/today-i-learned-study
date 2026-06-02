@@ -10,7 +10,8 @@ export default function CategoryFilter({
     onSelectCategory,
 }: CategoryFilterProps) {
 
-  
+
+
   return (
     <aside>
       <h2>Filtrar por categoria</h2>
