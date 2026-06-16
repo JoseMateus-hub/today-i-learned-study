@@ -1,1 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Coiny&family=Sono:wght,MONO@200..800,1&display=swap');
+
 @import 'tailwindcss';
+
+* {
+    font-family: 'Sono', sans-serif;
+}
+
+body {
+  background-color: #171717;
+  min-height: 100vh;
+}
+
+h1, button, li span {
+    font-family: 'Coiny', sans-serif;
+}
+
+@utility btn {
+    @apply uppercase leading-none rounded-full transition-transform duration-300 ease-in-out hover:scale-110 hover:-rotate-2 cursor-pointer
+}
