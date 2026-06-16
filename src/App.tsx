@@ -1,47 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { Fact } from './types';
 import Header from './components/Header';
 import FactList from './components/FactList';
 import CategoryFilter from './components/CategoryFilter';
 import NewFactForm from './components/NewFactForm';
+import { SupabaseClient } from '@supabase/supabase-js';
 
-const INITIAL_FACTS: Fact[] = [{
-  id: 1,
-  text: 'React foi criado pelo Facebook em 2013 e liberado como open source.',
-  source: 'https://reactjs.org',
-  category: 'technology',
-  votes_interesting: 24,
-  votes_mindblowing: 9,
-  votes_false: 1,
-  created_at: '2024-01-01T00:00:00Z',
-}, {
-  id: 2,
-  text: 'O cérebro humano tem aproximadamente 86 bilhões de neurônios.',
-  source: 'https://www.ncbi.nlm.nih.gov',
-  category: 'science',
-  votes_interesting: 41,
-  votes_mindblowing: 22,
-  votes_false: 0,
-  created_at: '2024-01-02T00:00:00Z',
-}, {
-  id: 3,
-  text: 'O Brasil é o maior produtor de café do mundo há mais de 150 anos.',
-  source: 'https://www.embrapa.br',
-  category: 'history',
-  votes_interesting: 18,
-  votes_mindblowing: 5,
-  votes_false: 2,
-  created_at: '2024-01-03T00:00:00Z',
-}];
+const supabase = new SupabaseClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export default function App() {
-  const [facts, setFacts] = useState<Fact[]>(INITIAL_FACTS);
+  const [facts, setFacts] = useState<Fact[]>([]);
   const [currentCategory, setCurrentCategory] = useState<string>('all');
   const [showForm, setShowForm] = useState<boolean>(false);
-
-  const displayedFacts = currentCategory === 'all'
-    ? facts
-    : facts.filter(fact => fact.category === currentCategory);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  
 
   function handleToggleForm() {
     setShowForm(show => !show);
@@ -51,15 +27,6 @@ export default function App() {
     setCurrentCategory(category);
   }
 
-  const [time, setTime] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(prevTime => prevTime + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [time]);
-
   const formInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -68,20 +35,58 @@ export default function App() {
     }
   }, [showForm]);
 
+  useEffect(() => {
+    async function getFacts() {
+      setIsLoading(true);
+      
+      let query = supabase
+      .from('facts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+      if (currentCategory !== 'all') {
+        query = query.eq('category', currentCategory);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        setError('Houve um erro ao carregar os fatos. Tente novamente mais tarde.');
+        setIsLoading(false);
+        return;
+      } 
+        setFacts(data as Fact[]);
+        setIsLoading(false);
+    }
+
+    getFacts();
+  }, [currentCategory]);
+
+  function handleVote(id: number, type: 'votes_interesting' | 'votes_mindblowing' | 'votes_false') {
+  setFacts(facts =>
+    facts.map(fact =>
+      fact.id === id ? { ...fact, [type]: fact[type] + 1 } : fact
+    )
+  );
+}
+
   return (
     <>
-      {time}
       <Header
         showForm={showForm}
         onToggleForm={handleToggleForm}
       />
       {showForm && <NewFactForm inputRef={formInputRef} />}
-      <main>
-        <CategoryFilter
-          currentCategory={currentCategory}
-          onSelectCategory={handleSelectCategory}
-        />
-        <FactList facts={displayedFacts} />
+     <main className="flex flex-col md:flex-row gap-6 px-6">
+     <CategoryFilter
+       currentCategory={currentCategory}
+       onSelectCategory={handleSelectCategory}
+       />
+       <FactList 
+       facts={facts} 
+       isLoading={isLoading}
+       error={error}
+       onVote={handleVote} />
       </main>
     </>
   );
